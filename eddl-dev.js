@@ -477,8 +477,8 @@
           }
           return (hint === "string" ? String : Number)(input);
         } /* global scAnalyticsDataArray, digitalData, Utils */ /*
-                                                                                                                                                                                                                                                                                                                                                                                                                                                    common event handlers for all markets
-                                                                                                                                                                                                                                                                                                                                                                                                                                                    */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                      common event handlers for all markets
+                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
         var searchEvent = true;
         var CommonEventListener = /*#__PURE__*/ (function () {
           function CommonEventListener() {
@@ -498,7 +498,7 @@
                       .getAttribute("content")
                   : null;
                 var mktCountryCode = Utils.getCurrentCountry();
-                this.productId = "na";
+                this.productId = "";
                 this.pfmId = "na";
                 that.getProductIdPfm();
                 window.digitalData = window.digitalData || {};
@@ -507,7 +507,7 @@
                   window.digitalData.page.attributes =
                     window.digitalData.page.attributes || {};
                   window.digitalData.page.attributes.platform =
-                    mktCountryCode == "hk" ? "web" : "website";
+                    mktCountryCode == "hk" ? "web" : "desktop website";
                   window.digitalData.page.attributes.pfm = this.pfmId;
                 }
 
@@ -520,15 +520,30 @@
                   var _pageName = window.digitalData.page.pageInfo.pageName;
                   _pageName = _pageName.split(":");
                   var pageNameList = [];
-                  if (_pageName.length > 1) {
-                    for (var i = 0; i < _pageName.length; i++) {
-                      if (i == 7) {
-                        pageNameList.push("na");
-                      } else {
-                        pageNameList.push(_pageName[i] ? _pageName[i] : "na");
+                  if (mktCountryCode == "hk") {
+                    if (_pageName.length > 1) {
+                      for (var i = 0; i < _pageName.length; i++) {
+                        if (i == 7) {
+                          pageNameList.push("na");
+                        } else {
+                          pageNameList.push(_pageName[i] ? _pageName[i] : "");
+                        }
                       }
                     }
                   }
+
+                  if (mktCountryCode == "sg") {
+                    if (_pageName.length > 1) {
+                      for (var i = 0; i < _pageName.length; i++) {
+                        if (i == 3) {
+                          pageNameList.splice(2, 1);
+                        } else {
+                          pageNameList.push(_pageName[i] ? _pageName[i] : "na");
+                        }
+                      }
+                    }
+                  }
+
                   if (_pageName.length <= 8) {
                     linkName =
                       document.querySelector("title") &&
@@ -564,32 +579,55 @@
                     pageNameList.join(":");
                   window.digitalData.page.pageInfo.buildDetails = "web3.0";
                   window.digitalData.page.pageInfo.libDetails =
-                    environment === "preview" ? "staging" : environment;
+                    environment === "staging" ? "stage" : environment;
                 }
-                var pageName =
-                  window.digitalData.page.pageInfo.pageName.split(":");
-                window.digitalData.user = window.digitalData.user || {};
-                window.digitalData.user.userInfo = {
-                  userStatus: "guest",
-                  userType: "NTB",
-                  segment: pageName[2],
-                  userID: "na",
-                };
+
+                if (mktCountryCode == "hk") {
+                  var pageName =
+                    window.digitalData.page.pageInfo.pageName.split(":");
+                  window.digitalData.user = window.digitalData.user || {};
+                  window.digitalData.user.userInfo = {
+                    userType: "ntb",
+                    segment: "personal",
+                    pagetype: "product",
+                    userID: "na",
+                    loginStatus: "guest",
+                  };
+                } else if (mktCountryCode == "sg") {
+                  var pageName =
+                    window.digitalData.page.pageInfo.pageName.split(":");
+                  window.digitalData.user = window.digitalData.user || {};
+                  window.digitalData.user.userInfo = {
+                    segment: "personal",
+                    userID: "na",
+                    userStatus: "guest",
+                    userType: "ntb",
+                    pagetype: "product",
+                  };
+                }
+
                 if (mktCountryCode == "hk") {
                   //For HK adobe data layer
                   //Update page name
                   var _pageName2 =
                     window.digitalData.page.pageInfo.pageName.split(":");
-                  _pageName2[3] = _pageName2[2];
+                  _pageName2[3] =
+                    window.digitalData.user.userInfo.segment +
+                    ":" +
+                    window.digitalData.user.userInfo.pagetype;
                   _pageName2[2] = window.digitalData.page.attributes.platform;
+                  _pageName2[5] = window.digitalData.page.category.subCategory1;
                   window.digitalData.page.pageInfo.pageName =
                     _pageName2.join(":");
+                  window.digitalData.page.category.subCategory2 = "na"
+                    ? ""
+                    : window.digitalData.page.category.subCategory2;
                   //Add user info
                   window.digitalData.userInfo =
                     window.digitalData.userInfo || {};
                   window.digitalData.userInfo =
                     window.digitalData.user.userInfo;
-                  window.digitalData.userInfo.loginStatus = "not logged-in";
+                  window.digitalData.userInfo.loginStatus;
                   delete window.digitalData.user;
                   //Add product info
                   if (
@@ -602,11 +640,31 @@
                     window.digitalData.products = [
                       {
                         productName: _pageName2[6],
-                        subProduct1: _pageName2[4],
-                        subProduct2: _pageName2[5],
+                        subProduct1: _pageName2[5],
+                        subProduct2: _pageName2[5] == "na" ? "" : _pageName5[5],
                       },
                     ];
                   }
+                }
+
+                if (mktCountryCode == "sg") {
+                  //For SG adobe data layer
+                  //Update page name
+                  var _pageName2 =
+                    window.digitalData.page.pageInfo.pageName.split(":");
+                  _pageName2[2] =
+                    window.digitalData.user.userInfo.segment +
+                    ":" +
+                    window.digitalData.user.userInfo.pagetype;
+                  _pageName2[3] =
+                    window.digitalData.page.category.primaryCategory +
+                    ":" +
+                    window.digitalData.page.category.subCategory1;
+                  window.digitalData.page.pageInfo.pageName =
+                    _pageName2.join(":");
+                  window.digitalData.page.category.subCategory2 = "na"
+                    ? ""
+                    : window.digitalData.page.category.subCategory2;
                 }
 
                 // 404 - Page not Found
@@ -716,7 +774,8 @@
                         _dataObject.product = {
                           productInfo: {
                             productCategory: _pageName5[4],
-                            productSubcategory: _pageName5[5],
+                            productSubcategory:
+                              _pageName5[5] == "na" ? "" : _pageName5[5],
                             productName: _pageName5[6],
                             productId: this.productId,
                           },
@@ -724,24 +783,7 @@
                       }
                     }
                   }
-                  if (mktCountryCode !== "sg") {
-                    /* eslint-disable no-undef */
-                    scAnalyticsDataArray.push(_dataObject);
-                  } else {
-                    // push GA Pageview data
-                    var title = _dataObject.title,
-                      href = _dataObject.href,
-                      context = _dataObject.context;
-                    var dataSet = {
-                      event: "trackElement",
-                      eventCategory: "~" + mktCountryCode + " : ^" + title,
-                      eventAction:
-                        title.trim() +
-                        (context !== "" ? "-" + context.trim() : ""),
-                      eventLabel: href,
-                    };
-                    window.dataLayer.push(dataSet);
-                  }
+                  scAnalyticsDataArray.push(_dataObject);
                 }
                 var ignorePixel = 10;
                 var startX;
@@ -927,30 +969,11 @@
                         ".tgl-mod-pin-mer-name"
                       );
                       var linkTitle = closestAnchor.querySelector(".title");
-                      var ctaTitle;
-                      if (
-                        closestAnchor.className.indexOf("sc-btn-tile") === -1
-                      ) {
-                        ctaTitle = closestAnchor.getAttribute("title")
-                          ? closestAnchor.getAttribute("title")
-                          : event.target.innerText ||
-                            event.target.textContent ||
-                            closestAnchor.getAttribute("data-context") ||
-                            closestAnchor.getAttribute("aria-label") ||
-                            (tglSelector
-                              ? tglSelector.innerText || tglSelector.textContent
-                              : "") ||
-                            (linkTitle
-                              ? linkTitle.innerText || linkTitle.textContent
-                              : "") ||
-                            closestAnchor.getAttribute("href") ||
-                            "";
-                      } else {
-                        ctaTitle =
-                          closestAnchor.getAttribute("data-context") ||
-                          closestAnchor.getAttribute("title") ||
-                          event.target.innerText ||
+                      var ctaTitle = closestAnchor.getAttribute("title")
+                        ? closestAnchor.getAttribute("title")
+                        : event.target.innerText ||
                           event.target.textContent ||
+                          closestAnchor.getAttribute("data-context") ||
                           closestAnchor.getAttribute("aria-label") ||
                           (tglSelector
                             ? tglSelector.innerText || tglSelector.textContent
@@ -960,7 +983,6 @@
                             : "") ||
                           closestAnchor.getAttribute("href") ||
                           "";
-                      }
                       ctaTitle = ctaTitle
                         ? ctaTitle.toLowerCase().trim()
                         : ctaTitle;
@@ -1008,10 +1030,13 @@
                       _dataObject3.ctaType = _ctaType;
                       if (event.target.closest(".sc-products-tile-modal")) {
                         _dataObject3.form = {
-                          formName: "",
+                          formName:
+                            window.digitalData.products.productName || "",
                           formStepName: "",
-                          formType: "",
-                          formPlatform: "",
+                          formType:
+                            window.digitalData.user.userInfo.pagetype || "",
+                          formPlatform:
+                            window.digitalData.page.attributes.platform || "",
                           popupName: closestAnchor
                             .getAttribute("title")
                             .split("-")[1],
@@ -1135,7 +1160,7 @@
                         user: {
                           userInfo: {
                             userStatus: "guest",
-                            userType: "NTB",
+                            userType: "ntb",
                           },
                         },
                         customLinkClick: {
@@ -1344,8 +1369,8 @@
                 var ctaType = document.querySelector(".sc-tab--bonus-saver")
                   ? event.currentTarget.classList.contains("splide__slide")
                     ? "persona"
-                    : "tab"
-                  : "tab";
+                    : "link"
+                  : "link";
                 var linkName =
                   document.querySelector("title") &&
                   document.querySelector("title").innerText
@@ -1405,8 +1430,6 @@
                   typeof className.includes === "undefined"
                 ) {
                   return "link";
-                } else if (className.indexOf("sc-btn-tile") !== -1) {
-                  return "tile";
                 } else if (
                   className.indexOf("sc-btn") !== -1 ||
                   className.indexOf("c-button") !== -1
@@ -1797,7 +1820,7 @@
                 if (
                   target.closest(".m-persistent-bar") ||
                   target.closest(".sc-persistent-bar") ||
-                  target.closest(".m-persistent-bootom-bar")
+                  target.closest(".m-persistent-bottom-bar")
                 ) {
                   return "persistent-bar";
                 }
